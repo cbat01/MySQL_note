@@ -1,0 +1,572 @@
+//登陆mysql
+C:\WINDOWS\system32>mysql -u root -p
+
+
+//创建数据库  t1
+mysql> CREATE DATABASE t1;  
+Query OK, 1 row affected (0.13 sec)
+
+//查看当前服务器下数据库列表
+mysql> SHOW DATABASES;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
+| sys                |
+| t1                 |
++--------------------+
+
+
+//打开数据库
+mysql> USE test;
+
+//查看当前打开的数据库
+mysql> SELECT DATABASE();
++------------+
+| DATABASE() |
++------------+
+| test       |
++------------+
+1 row in set (0.00 sec)
+
+//创建数据表
+mysql> CREATE TABLE tb1(
+    -> username VARCHAR(20),
+    -> age TINYINT UNSGINED,
+    -> salary FLOAT(8,2) UNSIGNED
+    -> );
+
+//查看数据表列表
+mysql> SHOW TABLES;
++----------------+
+| Tables_in_test |
++----------------+
+| tb1            |
++----------------+
+
+//查看tb1表的基本结构 	
+mysql> SHOW COLUMNS FROM tb1;
++----------+---------------------+------+-----+---------+-------+
+| Field    | Type                | Null | Key | Default | Extra |
++----------+---------------------+------+-----+---------+-------+
+| username | varchar(20)         | YES  |     | NULL    |       |
+| age      | tinyint(3) unsigned | YES  |     | NULL    |       |
+| salary   | float(8,2) unsigned | YES  |     | NULL    |       |
++----------+---------------------+------+-----+---------+-------+
+
+//插入记录
+mysql> INSERT tb1 VALUES('Tom',25,7863.99);   //(为每一列插入值)
+Query OK, 1 row affected (0.29 sec)
+
+mysql> INSERT tb1(username,salary) VALUES('John',45999.9);         //为某些列赋值
+
+//记录查找SELECT
+mysql> SELECT *FROM tb1;
++----------+------+----------+
+| username | age  | salary   |
++----------+------+----------+
+| Tom      |   25 |  7863.99 |
+| John     | NULL | 45999.90 |
++----------+------+----------+
+
+//设定某些字段可以为空，某些字段值禁止为空
+mysql> CREATE TABLE tb2(
+    -> username VARCHAR(20) NOT NULL,   //不可以为空
+    -> age TINYINT UNSIGNED NULL        //可以为空
+    -> );
+Query OK, 0 rows affected (0.37 sec)
+
+mysql> SHOW COLUMNS FROM tb2;
++----------+---------------------+------+-----+---------+-------+
+| Field    | Type                | Null | Key | Default | Extra |
++----------+---------------------+------+-----+---------+-------+
+| username | varchar(20)         | NO   |     | NULL    |       |
+| age      | tinyint(3) unsigned | YES  |     | NULL    |       |
++----------+---------------------+------+-----+---------+-------+
+
+//尝试加入数据
+mysql> INSERT tb2 VALUES('TOM',NULL);
+Query OK, 1 row affected (0.14 sec)
+
+mysql> SELECT *FROM tb2;
++----------+------+
+| username | age  |
++----------+------+
+| TOM      | NULL |
+
+mysql> INSERT tb2 VALUES(NULL,26);
+ERROR 1048 (23000): Column 'username' cannot be null      //禁止为空字段一定要赋值
+
+
+//创建一个表，定义为自动编号auto_increment,必须加上主键
+//即auto_increment必须和主键一起使用；但主键可以单独使用
+mysql> CREATE TABLE tb3(
+    -> id SMALLINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    -> username VARCHAR(30) NOT NULL
+    -> );
+Query OK, 0 rows affected (0.38 sec)
+
+
+mysql> SHOW COLUMNS FROM tb3;
++----------+----------------------+------+-----+---------+----------------+
+| Field    | Type                 | Null | Key | Default | Extra          |
++----------+----------------------+------+-----+---------+----------------+
+| id       | smallint(5) unsigned | NO   | PRI | NULL    | auto_increment |
+| username | varchar(30)          | NO   |     | NULL    |                |
++----------+----------------------+------+-----+---------+----------------+
+2 rows in set (0.00 sec)
+
+mysql> INSERT tb3(username) VALUES('TOM');
+Query OK, 1 row affected (0.17 sec)
+
+mysql> INSERT tb3(username) VALUES('JANE');
+Query OK, 1 row affected (0.15 sec)
+
+mysql> INSERT tb3(username) VALUES('KANGKANG');
+Query OK, 1 row affected (0.13 sec)
+
+mysql> INSERT tb3(username) VALUES('John');
+Query OK, 1 row affected (0.14 sec)
+
+mysql> SELECT *FROM tb3;
++----+----------+
+| id | username |
++----+----------+
+|  1 | TOM      |
+|  2 | JANE     |
+|  3 | KANGKANG |
+|  4 | John     |
++----+----------+
+
+//即auto_increment必须和主键一起使用；但主键可以单独使用
+
+mysql> CREATE TABLE tb4(
+    -> id SMALLINT UNSIGNED PRIMARY KEY,
+    -> username VARCHAR(20) NOT NULL
+    -> );
+Query OK, 0 rows affected (0.46 sec)
+
+mysql> SHOW COLUMNS FROM tb4;
++----------+----------------------+------+-----+---------+-------+
+| Field    | Type                 | Null | Key | Default | Extra |
++----------+----------------------+------+-----+---------+-------+
+| id       | smallint(5) unsigned | NO   | PRI | NULL    |       |
+| username | varchar(20)          | NO   |     | NULL    |       |
++----------+----------------------+------+-----+---------+-------+
+2 rows in set (0.00 sec)
+
+mysql> INSERT tb4 VALUES(22,'John');
+Query OK, 1 row affected (0.11 sec)
+
+mysql> INSERT tb4 VALUES(9,'Mike');
+Query OK, 1 row affected (0.17 sec)
+
+mysql> SELECT *FROM tb4;
++----+----------+
+| id | username |
++----+----------+
+|  9 | Mike     |
+| 22 | John     |
++----+----------+
+
+
+//唯一约束 可以保证记录的唯一性/字段可为空值（NULL）,每张表可以存在多个唯一约束
+//创建一个既有主键约束 又有唯一约束的表
+mysql> CREATE TABLE tb5(
+    -> id SMALLINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    -> username VARCHAR(20) NOT NULL UNIQUE KEY,
+    -> age tinyint UNSIGNED);
+Query OK, 0 rows affected (0.43 sec)
+
+mysql> SHOW COLUMNS FROM tb5;
++----------+----------------------+------+-----+---------+----------------+
+| Field    | Type                 | Null | Key | Default | Extra          |
++----------+----------------------+------+-----+---------+----------------+
+| id       | smallint(5) unsigned | NO   | PRI | NULL    | auto_increment |
+| username | varchar(20)          | NO   | UNI | NULL    |                |
+| age      | tinyint(3) unsigned  | YES  |     | NULL    |                |
++----------+----------------------+------+-----+---------+----------------+
+
+mysql> INSERT tb5(username,age) VALUES('TOM',22);
+Query OK, 1 row affected (0.10 sec)
+
+mysql> INSERT tb5(username,age) VALUES('TOM',22);      //记录失败，因为username加了唯一约束，TOM已经存在
+ERROR 1062 (23000): Duplicate entry 'TOM' for key 'username'
+
+//默认约束
+mysql> CREATE TABLE tb6(
+    -> id SMALLINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    -> username VARCHAR(20) NOT NULL UNIQUE KEY,
+    -> sex ENUM('1','2','3') DEFAULT '3'             //sex存在默认字段3
+    -> );
+
+mysql> SHOW COLUMNS from tb6;
++----------+----------------------+------+-----+---------+----------------+
+| Field    | Type                 | Null | Key | Default | Extra          |
++----------+----------------------+------+-----+---------+----------------+
+| id       | smallint(5) unsigned | NO   | PRI | NULL    | auto_increment |
+| username | varchar(20)          | NO   | UNI | NULL    |                |
+| sex      | enum('1','2','3')    | YES  |     | 3       |                |
++----------+----------------------+------+-----+---------+----------------+
+
+mysql> INSERT tb6(username) VALUES('MIKE');   //只插入username
+Query OK, 1 row affected (0.12 sec)
+
+mysql> SELECT * FROM tb6;
++----+----------+------+
+| id | username | sex  |
++----+----------+------+
+|  1 | MIKE     | 3    |
+
+//外键约束/父表与字表
+
+//创建父表
+mysql> CREATE TABLE provinces(
+    -> id SMALLINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,   //参照列
+    -> pname VARCHAR(20) NOT NULL
+    -> );
+//创建字表
+mysql> CREATE TABLE users(
+    -> id SMALLINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    -> username VARCHAR(10) NOT NULL,
+    -> pid SMALLINT UNSIGNED,           // 外键列 必须和父表类型一致
+    -> FOREIGN KEY (pid) REFERENCES provinces (id)
+    -> );
+Query OK, 0 rows affected (0.54 sec)
+
+
+//创建users1表，以provinces做父表
+mysql> CREATE TABLE users1(
+    -> id SMALLINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    -> username VARCHAR(10) NOT NULL,
+    -> pid SMALLINT UNSIGNED,
+    -> FOREIGN KEY (pid) REFERENCES provinces (id) ON DELETE CASCADE
+    -> );
+
+//往provins添加内容
+mysql> INSERT provinces(pname) VALUES('广东省');
+Query OK, 1 row affected (0.13 sec)
+
+mysql> INSERT provinces(pname) VALUES('福建省');
+Query OK, 1 row affected (0.17 sec)
+
+mysql> INSERT provinces(pname) VALUES('浙江省');
+Query OK, 1 row affected (0.10 sec)
+
+mysql> INSERT provinces(pname) VALUES('广西省');
+Query OK, 1 row affected (0.06 sec)
+
+mysql> SELECT * FROM provinces;
++----+-----------+
+| id | pname     |
++----+-----------+
+|  1 | 广东省    |
+|  2 | 福建省    |
+|  3 | 浙江省    |
+|  4 | 广西省    |
++----+-----------+
+
+//往users1添加内容
+mysql> INSERT user1(username,pid) VALUES('马夹心','1');
+ERROR 1146 (42S02): Table 'test.user1' doesn't exist
+mysql> INSERT users1(username,pid) VALUES('马夹心','1');
+Query OK, 1 row affected (0.18 sec)
+
+mysql> INSERT users1(username,pid) VALUES('小明','5');  //父表不存在，所以添加不了
+ERROR 1452 (23000): Cannot add or update a child row: a foreign key constraint fails (`test`.`users1`, CONSTRAINT `users1_ibfk_1` FOREIGN KEY (`pid`) REFERENCES `provinces` (`id`) ON DELETE CASCADE)
+mysql> INSERT users1(username,pid) VALUES('小红','3');
+Query OK, 1 row affected (0.18 sec)
+
+mysql> SELECT * FROM users1;
++----+-----------+------+
+| id | username  | pid  |
++----+-----------+------+
+|  1 | 马夹心    |    1 |
+|  3 | 小红      |    3 |
++----+-----------+------+
+
+//删除provincs中的一条记录
+mysql> DELETE FROM provinces WHERE id =3;
+Query OK, 1 row affected (0.21 sec)
+
+mysql> SELECT * FROM provinces;
++----+-----------+
+| id | pname     |
++----+-----------+
+|  1 | 广东省    |
+|  2 | 福建省    |
+|  4 | 广西省    |
++----+-----------+
+
+mysql> SELECT * FROM users1;  
++----+-----------+------+
+| id | username  | pid  |
++----+-----------+------+
+|  1 | 马夹心    |    1 |
++----+-----------+------+
+//此时发现users1中id为3的记录也被删除了，只是因为创建users1时，添加了ON DELETE CASCADE
+
+
+
+//数据表的修改
+
+//添加单列age
+mysql> SELECT * FROM users1;
++----+-----------+------+
+| id | username  | pid  |
++----+-----------+------+
+|  1 | 马夹心    |    1 |
++----+-----------+------+
+1 row in set (0.00 sec)
+
+mysql>  SHOW COLUMNS FROM users1;
++----------+----------------------+------+-----+---------+----------------+
+| Field    | Type                 | Null | Key | Default | Extra          |
++----------+----------------------+------+-----+---------+----------------+
+| id       | smallint(5) unsigned | NO   | PRI | NULL    | auto_increment |
+| username | varchar(10)          | NO   |     | NULL    |                |
+| pid      | smallint(5) unsigned | YES  | MUL | NULL    |                |
++----------+----------------------+------+-----+---------+----------------+
+3 rows in set (0.00 sec)
+
+mysql> ALTER TABLE users1 ADD age TINYINT UNSIGNED NOT NULL DEFAULT 10;
+Query OK, 0 rows affected (1.26 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> SHOW COLUMNS FROM users1;
++----------+----------------------+------+-----+---------+----------------+
+| Field    | Type                 | Null | Key | Default | Extra          |
++----------+----------------------+------+-----+---------+----------------+
+| id       | smallint(5) unsigned | NO   | PRI | NULL    | auto_increment |
+| username | varchar(10)          | NO   |     | NULL    |                |
+| pid      | smallint(5) unsigned | YES  | MUL | NULL    |                |
+| age      | tinyint(3) unsigned  | NO   |     | 10      |                |
++----------+----------------------+------+-----+---------+----------------+
+//添加单列age结束
+
+//添加单列password，且至于username后面
+mysql> ALTER TABLE users1 ADD password VARCHAR(32) NOT NULL AFTER username;
+Query OK, 0 rows affected (1.09 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> SHOW COLUMNS FROM users1;
++----------+----------------------+------+-----+---------+----------------+
+| Field    | Type                 | Null | Key | Default | Extra          |
++----------+----------------------+------+-----+---------+----------------+
+| id       | smallint(5) unsigned | NO   | PRI | NULL    | auto_increment |
+| username | varchar(10)          | NO   |     | NULL    |                |
+| password | varchar(32)          | NO   |     | NULL    |                |
+| pid      | smallint(5) unsigned | YES  | MUL | NULL    |                |
+| age      | tinyint(3) unsigned  | NO   |     | 10      |                |
++----------+----------------------+------+-----+---------+----------------+
+//添加passwor结束
+
+//添加truename，并位于第一列
+mysql> ALTER TABLE users1 ADD truename VARCHAR(10) first;
+Query OK, 0 rows affected (0.94 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> SHOW COLUMNS FROM users1;
++----------+----------------------+------+-----+---------+----------------+
+| Field    | Type                 | Null | Key | Default | Extra          |
++----------+----------------------+------+-----+---------+----------------+
+| truename | varchar(10)          | YES  |     | NULL    |                |
+| id       | smallint(5) unsigned | NO   | PRI | NULL    | auto_increment |
+| username | varchar(10)          | NO   |     | NULL    |                |
+| password | varchar(32)          | NO   |     | NULL    |                |
+| pid      | smallint(5) unsigned | YES  | MUL | NULL    |                |
+| age      | tinyint(3) unsigned  | NO   |     | 10      |                |
++----------+----------------------+------+-----+---------+----------------+
+//添加truename结束
+
+
+//删除列
+
+//删除单列truename
+mysql> ALTER TABLE users1 DROP truename;
+Query OK, 0 rows affected (1.14 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> SHOW COLUMNS FROM users1;
++----------+----------------------+------+-----+---------+----------------+
+| Field    | Type                 | Null | Key | Default | Extra          |
++----------+----------------------+------+-----+---------+----------------+
+| id       | smallint(5) unsigned | NO   | PRI | NULL    | auto_increment |
+| username | varchar(10)          | NO   |     | NULL    |                |
+| password | varchar(32)          | NO   |     | NULL    |                |
+| pid      | smallint(5) unsigned | YES  | MUL | NULL    |                |
+| age      | tinyint(3) unsigned  | NO   |     | 10      |                |
++----------+----------------------+------+-----+---------+----------------+
+5 rows in set (0.00 sec)
+//删除单列结束
+
+//删除多列
+mysql> ALTER TABLE users1 DROP password,DROP age;
+Query OK, 0 rows affected (1.17 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> SHOW COLUMNS FROM users1;
++----------+----------------------+------+-----+---------+----------------+
+| Field    | Type                 | Null | Key | Default | Extra          |
++----------+----------------------+------+-----+---------+----------------+
+| id       | smallint(5) unsigned | NO   | PRI | NULL    | auto_increment |
+| username | varchar(10)          | NO   |     | NULL    |                |
+| pid      | smallint(5) unsigned | YES  | MUL | NULL    |                |
++----------+----------------------+------+-----+---------+----------------+
+3 rows in set (0.00 sec)
+
+//创建新的表users2
+mysql> CREATE TABLE users2(
+    -> username VARCHAR(20) NOT NULL,
+    -> pid SMALLINT UNSIGNED
+    -> );
+
+mysql> ALTER TABLE users2 ADD id SMALLINT UNSIGNED;   //增加一列id
+Query OK, 0 rows affected (0.71 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> SHOW COLUMNS FROM users2;
++----------+----------------------+------+-----+---------+-------+
+| Field    | Type                 | Null | Key | Default | Extra |
++----------+----------------------+------+-----+---------+-------+
+| username | varchar(20)          | NO   |     | NULL    |       |
+| pid      | smallint(5) unsigned | YES  |     | NULL    |       |
+| id       | smallint(5) unsigned | YES  |     | NULL    |       |
++----------+----------------------+------+-----+---------+-------+
+3 rows in set (0.00 sec)
+
+mysql> ALTER TABLE users2 ADD CONSTRAINT PK_users2_id PRIMARY KEY(id);  //添加id为主键约束，主键名字设为PK_users2_id
+
+
+mysql> ALTER TABLE users2 ADD UNIQUE(username);
+//给username添加唯一约束
+
+mysql> SHOW COLUMNS FROM users2;
++----------+----------------------+------+-----+---------+-------+
+| Field    | Type                 | Null | Key | Default | Extra |
++----------+----------------------+------+-----+---------+-------+
+| username | varchar(20)          | NO   | UNI | NULL    |       |
+| pid      | smallint(5) unsigned | YES  |     | NULL    |       |
+| id       | smallint(5) unsigned | NO   | PRI | NULL    |       |
++----------+----------------------+------+-----+---------+-------+
+
+//////////
+mysql> show columns from provinces;
++-------+----------------------+------+-----+---------+----------------+
+| Field | Type                 | Null | Key | Default | Extra          |
++-------+----------------------+------+-----+---------+----------------+
+| id    | smallint(5) unsigned | NO   | PRI | NULL    | auto_increment |
+| pname | varchar(20)          | NO   |     | NULL    |                |
++-------+----------------------+------+-----+---------+----------------+
+2 rows in set (0.00 sec)
+
+mysql> ALTER TABLE users2 ADD FOREIGN KEY (pid) REFERENCES provinces(id);
+//给pid添加外键约束
+
+
+mysql> SHOW COLUMNS FROM users2;
++----------+----------------------+------+-----+---------+-------+
+| Field    | Type                 | Null | Key | Default | Extra |
++----------+----------------------+------+-----+---------+-------+
+| username | varchar(20)          | NO   | UNI | NULL    |       |
+| pid      | smallint(5) unsigned | YES  | MUL | NULL    |       |
+| id       | smallint(5) unsigned | NO   | PRI | NULL    |       |
++----------+----------------------+------+-----+---------+-------+
+
+//添加/删除默认约束
+mysql> ALTER TABLE users2 ADD age TINYINT UNSIGNED NOT NULL;
+
+mysql> SHOW COLUMNS FROM users2;
++----------+----------------------+------+-----+---------+-------+
+| Field    | Type                 | Null | Key | Default | Extra |
++----------+----------------------+------+-----+---------+-------+
+| username | varchar(20)          | NO   | UNI | NULL    |       |
+| pid      | smallint(5) unsigned | YES  | MUL | NULL    |       |
+| id       | smallint(5) unsigned | NO   | PRI | NULL    |       |
+| age      | tinyint(3) unsigned  | NO   |     | NULL    |       |
++----------+----------------------+------+-----+---------+-------+
+
+//给age添加默认值15
+mysql> ALTER TABLE users2 ALTER age SET DEFAULT 15;
+Query OK, 0 rows affected (0.17 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> SHOW COLUMNS FROM users2;
++----------+----------------------+------+-----+---------+-------+
+| Field    | Type                 | Null | Key | Default | Extra |
++----------+----------------------+------+-----+---------+-------+
+| username | varchar(20)          | NO   | UNI | NULL    |       |
+| pid      | smallint(5) unsigned | YES  | MUL | NULL    |       |
+| id       | smallint(5) unsigned | NO   | PRI | NULL    |       |
+| age      | tinyint(3) unsigned  | NO   |     | 15      |       |
++----------+----------------------+------+-----+---------+-------+
+
+//删除age默认约束
+mysql> ALTER TABLE users2 ALTER age DROP DEFAULT;
+Query OK, 0 rows affected (0.14 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> SHOW COLUMNS FROM users2;
++----------+----------------------+------+-----+---------+-------+
+| Field    | Type                 | Null | Key | Default | Extra |
++----------+----------------------+------+-----+---------+-------+
+| username | varchar(20)          | NO   | UNI | NULL    |       |
+| pid      | smallint(5) unsigned | YES  | MUL | NULL    |       |
+| id       | smallint(5) unsigned | NO   | PRI | NULL    |       |
+| age      | tinyint(3) unsigned  | NO   |     | NULL    |       |
++----------+----------------------+------+-----+---------+-------+
+
+//删除约束
+//删除主键约束
+mysql> ALTER TABLE users2 DROP PRIMARY KEY;
+
+mysql> SHOW COLUMNS FROM users2;
++----------+----------------------+------+-----+---------+-------+
+| Field    | Type                 | Null | Key | Default | Extra |
++----------+----------------------+------+-----+---------+-------+
+| username | varchar(20)          | NO   | PRI | NULL    |       |
+| pid      | smallint(5) unsigned | YES  | MUL | NULL    |       |
+| id       | smallint(5) unsigned | NO   |     | NULL    |       |
+| age      | tinyint(3) unsigned  | NO   |     | NULL    |       |
++----------+----------------------+------+-----+---------+-------+
+//主键已经被删除
+
+
+//修改列定义
+
+mysql> ALTER TABLE users2 MODIFY id SMALLINT UNSIGNED NOT NULL FIRST;
+把id移到第一列
+Query OK, 0 rows affected (0.93 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> SHOW COLUMNS FROM users2;
++----------+----------------------+------+-----+---------+-------+
+| Field    | Type                 | Null | Key | Default | Extra |
++----------+----------------------+------+-----+---------+-------+
+| id       | smallint(5) unsigned | NO   |     | NULL    |       |
+| username | varchar(20)          | NO   | PRI | NULL    |       |
+| pid      | smallint(5) unsigned | YES  | MUL | NULL    |       |
+| age      | tinyint(3) unsigned  | NO   |     | NULL    |       |
++----------+----------------------+------+-----+---------+-------+
+
+mysql> ALTER TABLE users2 MODIFY id TINYINT UNSIGNED NOT NULL;
+//修改id数据类型为TINYINT
+Query OK, 0 rows affected (0.95 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> SHOW COLUMNS FROM users2;
++----------+----------------------+------+-----+---------+-------+
+| Field    | Type                 | Null | Key | Default | Extra |
++----------+----------------------+------+-----+---------+-------+
+| id       | tinyint(3) unsigned  | NO   |     | NULL    |       |
+| username | varchar(20)          | NO   | PRI | NULL    |       |
+| pid      | smallint(5) unsigned | YES  | MUL | NULL    |       |
+| age      | tinyint(3) unsigned  | NO   |     | NULL    |       |
++----------+----------------------+------+-----+---------+-------+
+
+//修改表名称
+mysql> ALTER TABLE users2 RENAME users3;
+//方法二
+mysql> show tables;
